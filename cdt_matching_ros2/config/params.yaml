@@ -1,0 +1,69 @@
+cdt_matching_ros2:
+  ros__parameters:
+    # ---------------- フレーム ----------------
+    global_frame_id: "map"
+    odom_frame_id: "odom"
+    base_frame_id: "base_link"
+    camera_frame_id: "camera_optical_frame"
+
+    # ---------------- 入力ファイル ----------------
+    camera_yaml_path: "/home/keisoku/cdt_ws/src/cdt_matching/data/atoms3r_640x480_param.yaml"   # OpenCVキャリブレーション結果
+    map_dir: "/home/keisoku/map_ws/data/around_lab_2026/around_lab_2026.pcd"                         # *.pcd を含むフォルダ(または単一pcdファイル)
+    map_voxel_leaf: 0.05                                   # 地図のダウンサンプリング [m] (0で無効)
+
+    # ---------------- センサ利用の選択 ----------------
+    use_odom: false    # /input_odom (nav_msgs/msg/Odometry)
+    use_imu: false     # /input_imu  (sensor_msgs/msg/Imu)
+
+    # ---------------- カメラ取り付け (base_link -> カメラ光学座標系 z前/x右/y下) ----------------
+    use_tf_camera_extrinsic: false
+    base_to_camera_xyz: [0.0, 0.0, 0.1]
+    base_to_camera_rpy: [-1.5708, 0.0, -1.5708]   # 前向きカメラ
+
+    # ---------------- 初期位置 (未設定なら RViz2 の 2D Pose Estimate を待つ) ----------------
+    set_initial_pose: false
+    initial_pose_x: 0.0
+    initial_pose_y: 0.0
+    initial_pose_z: 0.0
+    initial_pose_roll: 0.0
+    initial_pose_pitch: 0.0
+    initial_pose_yaw: 0.0
+
+    # ---------------- 画像処理 ----------------
+    image_scale: 0.25           # 処理解像度の縮小率 (レンダリング・特徴抽出が軽くなる)
+    min_process_interval: 0.0   # [s] 処理間隔の下限 (0で全フレーム処理)
+    publish_debug_image: true   # /rendered_img に推定姿勢でのレンダリング画像を配信
+
+    # ---------------- 画像マッチング ----------------
+    color_levels: 8             # 各チャンネルの階調数 (8 → 3ch×8=24クラス, 256 → 3ch×256)
+    min_class_pixels: 10
+    weight_ratio: 1.0
+    weight_centroid: 1.0
+    weight_stddev: 1.0
+    weight_gradient: 1.0
+    weight_coverage: 0.5
+    min_coverage: 0.02
+    empty_render_penalty: 1.0
+
+    # ---------------- レンダリング ----------------
+    render_min_range: 0.1
+    render_max_range: 15.0
+    render_point_size: 0.03
+    render_max_splat_px: 3
+    local_map_margin: 2.0
+
+    # ---------------- 最適化 (NDT準拠) ----------------
+    max_iterations: 20
+    transformation_epsilon: 0.001
+    step_size: 0.2              # 1反復の最大並進 [m]
+    step_size_rot: 0.1          # 1反復の最大回転 [rad]
+    lambda_init: 0.01
+    jacobian_eps_trans: 0.02
+    jacobian_eps_rot: 0.01
+    optimize_dof_mask: [true, true, false, false, false, true]   # [x, y, z, rx, ry, rz]
+    covariance_floor: 0.0001
+    score_threshold: 1.0        # これを超えたら最適化結果を棄却
+
+    # ---------------- TF ----------------
+    tf_publish_rate: 20.0
+    transform_tolerance: 0.1
